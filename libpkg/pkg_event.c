@@ -293,6 +293,10 @@ pipeevent(struct pkg_event *ev)
 		utstring_printf(msg, "{ \"type\": \"INFO_NEWPKGVERSION\", "
 		    "\"data\": {} ");
 		break;
+	case PKG_EVENT_NEWUSERLANDVERSION:
+		utstring_printf(msg, "{ \"type\": \"INFO_NEWUSERLANDVERSION\", "
+		    "\"data\": {} ");
+		break;
 	case PKG_EVENT_FILE_MISMATCH:
 		pkg_utstring_printf(msg, "{ \"type\": \"ERROR_FILE_MISMATCH\", "
 		    "\"data\": { "
@@ -786,6 +790,15 @@ pkg_emit_newpkgversion(void)
 {
 	struct pkg_event ev;
 	ev.type = PKG_EVENT_NEWPKGVERSION;
+
+	pkg_emit_event(&ev);
+}
+
+void
+pkg_emit_newuserlandversion(void)
+{
+	struct pkg_event ev;
+	ev.type = PKG_EVENT_NEWUSERLANDVERSION;
 
 	pkg_emit_event(&ev);
 }

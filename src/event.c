@@ -760,6 +760,11 @@ event_callback(void *data, struct pkg_event *ev)
 		printf("New version of pkg detected; it needs to be "
 		    "installed first.\n");
 		break;
+	case PKG_EVENT_NEWUSERLANDVERSION:
+		newuserlandversion = true;
+		printf("New version of userland detected; it needs to be "
+		    "installed first.\n");
+		break;
 	case PKG_EVENT_FILE_MISMATCH:
 		pkg = ev->e_file_mismatch.pkg;
 		pkg_fprintf(stderr, "%n-%v: checksum mismatch for %Fn\n", pkg,

@@ -481,5 +481,8 @@ cleanup:
 	if (!rc && newpkgversion)
 		newpkgversion = false;
 
+	if (!rc && newuserlandversion)
+		newuserlandversion = false;
+
 	return (retcode);
 }
