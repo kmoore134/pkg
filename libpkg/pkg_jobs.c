@@ -69,6 +69,7 @@
 static int pkg_jobs_find_upgrade(struct pkg_jobs *j, const char *pattern, match_t m);
 static int pkg_jobs_fetch(struct pkg_jobs *j);
 static bool new_pkg_version(struct pkg_jobs *j);
+static bool new_userland_version(struct pkg_jobs *j);
 static int pkg_jobs_check_conflicts(struct pkg_jobs *j);
 struct pkg_jobs_locked {
 	int (*locked_pkg_cb)(struct pkg *, void *);
@@ -668,6 +669,54 @@ pkg_jobs_test_automatic(struct pkg_jobs *j, struct pkg *p)
 
 		ret = pkg_jobs_test_automatic(j, npkg);
 	}
+
+	return (ret);
+}
+
+
+static bool
+new_userland_version(struct pkg_jobs *j)
+{
+	struct pkg *p;
+	const char *uid = "os/userland-base-bootstrap";
+	pkg_flags old_flags;
+	bool ret = false;
+	struct pkg_job_universe_item *nit, *cit;
+
+	/* Disable -f for self-check, and restore at end. */
+	old_flags = j->flags;
+	j->flags &= ~(PKG_FLAG_FORCE|PKG_FLAG_RECURSIVE);
+
+	/* determine local userland-base-bootstrap */
+	p = pkg_jobs_universe_get_local(j->universe, uid, 0);
+
+	/* you are using git version skip */
+	if (p == NULL) {
+		ret = false;
+		goto end;
+	}
+
+	/* Use maximum priority for userland-base-bootstrap */
+	if (pkg_jobs_find_upgrade(j, p->name, MATCH_EXACT) == EPKG_OK) {
+		/*
+		 * Now we can have *potential* upgrades, but we can have a situation,
+		 * when our upgrade candidate comes from another repo
+		 */
+		nit = pkg_jobs_universe_find(j->universe, uid);
+
+		if (nit) {
+			DL_FOREACH(nit, cit) {
+				if (pkg_version_change_between (cit->pkg, p) == PKG_UPGRADE) {
+					/* We really have newer version which is not installed */
+					ret = true;
+					break;
+				}
+			}
+		}
+	}
+
+end:
+	j->flags = old_flags;
 
 	return (ret);
 }
@@ -1562,6 +1611,15 @@ jobs_solve_install_upgrade(struct pkg_jobs *j)
 			pkg_emit_newpkgversion();
 			goto order;
 		}
+
+	/* Check for a newser userland-base-bootstrap and update it first */
+	if (new_userland_version(j)) {
+			j->flags &= ~PKG_FLAG_PKG_VERSION_TEST;
+			j->conservative = false;
+			j->pinning = false;
+			pkg_emit_newuserlandversion();
+			goto order;
+	}
 
 	if (j->patterns == NULL && j->type == PKG_JOBS_INSTALL) {
 		pkg_emit_error("no patterns are specified for install job");

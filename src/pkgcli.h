@@ -41,6 +41,7 @@ int nbactions;
 extern int nbdone;
 int nbdone;
 extern bool newpkgversion;
+extern bool newuserlandversion;
 extern int nbtodl;
 int nbtodl;
 
@@ -306,6 +307,7 @@ extern int case_sensitive;
 extern int force;
 extern bool quiet;
 extern bool newpkgversion;
+extern bool newuserlandversion;
 void set_globals(void);
 
 #endif

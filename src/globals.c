@@ -31,6 +31,7 @@ int case_sensitive; /* Case sensitive queries */
 int force; /* Forced operation */
 int quiet; /* Silent output */
 int newpkgversion; /* New package version is available */
+int newuserlandversion; /* New userland version is available */
 
 void
 set_globals(void)
@@ -43,5 +44,6 @@ set_globals(void)
 	force = 0;
 	quiet = 0;
 	newpkgversion = 0;
+	newuserlandversion = 0;
 }
 
